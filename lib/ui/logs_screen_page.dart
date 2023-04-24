@@ -11,9 +11,6 @@ class _LogsScreenPageState extends State<LogsScreenPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Logs'),
-      ),
       body: const Center(
         child: Text(
           'Logs Page',
