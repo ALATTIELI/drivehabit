@@ -7,6 +7,7 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:test2/models/driving_data.dart';
 import 'package:test2/services/location_service.dart';
 import 'package:test2/services/sensor_service.dart';
+import 'package:test2/services/mongo_service.dart';
 
 class HomeScreenPage extends StatefulWidget {
   @override
@@ -14,6 +15,10 @@ class HomeScreenPage extends StatefulWidget {
 }
 
 class _HomeScreenPageState extends State<HomeScreenPage> {
+  late MongoService _mongoService;
+  List<Map<String, dynamic>>? _dataObjects;
+  late String grade = '-';
+
   LocationService _locationService = LocationService();
   SensorService _sensorService = SensorService();
   StreamSubscription<Position>? _locationSubscription;
@@ -63,10 +68,11 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
         });
 
         _locationSubscription =
-            Geolocator.getPositionStream().listen((Position newPosition) {
+            Geolocator.getPositionStream().listen((Position newPosition) async {
           setState(() {
             _currentPosition = newPosition;
           });
+          await fetchData();
         });
       }
     });
@@ -79,6 +85,11 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
   @override
   void initState() {
     super.initState();
+    initializeServices();
+  }
+
+  Future<void> initializeServices() async {
+    _mongoService = await MongoService.initialize();
   }
 
   @override
@@ -88,7 +99,25 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
     }
     _stopwatch.stop();
     _stopLocationUpdates();
+    _mongoService.close();
     super.dispose();
+  }
+
+  Future<void> fetchData() async {
+    final dataObjects = await _mongoService.dataObjectsWithinRadius(
+        _currentPosition!.longitude, _currentPosition!.latitude, 10.0);
+
+    setState(() {
+      _dataObjects = dataObjects;
+      double speedInKmPerHour = _currentPosition!.speed * 3.6;
+      if (speedInKmPerHour > _dataObjects![0]['speedLimit']) {
+        grade = 'F';
+      } else {
+        grade = 'P';
+        print("${speedInKmPerHour} && ${_dataObjects![0]['speedLimit']}");
+      }
+    });
+    print('Data objects within radius: $dataObjects');
   }
 
   @override
@@ -120,6 +149,28 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
                 '${(_currentPosition!.speed * 3.6).toStringAsFixed(2)} km/h',
                 textAlign: TextAlign.center,
               ),
+            Text(
+              'Grade',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '$grade',
+              textAlign: TextAlign.center,
+            ),
+            _dataObjects != null
+                ? Expanded(
+                    child: ListView.builder(
+                      itemCount: _dataObjects!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return ListTile(
+                          title: Text('Data Object ${index + 1}:'),
+                          subtitle: Text(
+                              'Type: ${_dataObjects![index]['type']}\nSpeed Limit: ${_dataObjects![index]['speedLimit']}'),
+                        );
+                      },
+                    ),
+                  )
+                : CircularProgressIndicator(),
           ],
         ),
       ),
