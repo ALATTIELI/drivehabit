@@ -48,4 +48,16 @@ class MongoService {
 
     return dataObjects;
   }
+
+  Future<void> addNewLog(List<dynamic> data) async {
+    // Create a new map with the data list and the current timestamp
+    Map<String, dynamic> logData = {
+      'data': data,
+      'timestamp': DateTime.now(),
+    };
+
+    // Insert the map into the logs collection
+    final collection = db.collection('logs');
+    await collection.insert(logData);
+  }
 }
