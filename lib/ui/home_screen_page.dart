@@ -7,6 +7,9 @@ import 'package:sensors_plus/sensors_plus.dart';
 import 'package:test2/services/location_service.dart';
 import 'package:test2/services/sensor_service.dart';
 import 'package:test2/services/mongo_service.dart';
+import 'package:test2/ui/profile_screen_page.dart';
+
+import '../models/UserData.dart';
 
 class HomeScreenPage extends StatefulWidget {
   @override
@@ -21,10 +24,12 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
   late int _mistakes = 0;
   late List _mistakeList = [];
 
+  UserData? userData = UserStorage.userData;
+
   LocationService _locationService = LocationService();
   SensorService _sensorService = SensorService();
   StreamSubscription<Position>? _locationSubscription;
-  var _mistakeTimestamps;
+  late List _mistakeTimestamps = [];
 
   Stopwatch _stopwatch = Stopwatch();
   Timer _timer = Timer(Duration.zero, () {});
@@ -45,6 +50,27 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
   bool _isTracking = false;
 
   void _toggleTracking() async {
+    if (userData == null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('You need to log in'),
+            content: Text('Please log in to start tracking.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      return;
+    }
+
     setState(() {
       _isTracking = !_isTracking;
     });
@@ -130,17 +156,18 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
   }
 
   void clearVars() {
-    _mistakes = 0;
-    _mistakeTimestamps = [];
-    _mistakeList = [];
-    grade = '-';
-    finalGrade = null;
+    setState(() {
+      _mistakes = 0;
+      _mistakeTimestamps = [];
+      _mistakeList = [];
+      grade = '-';
+      finalGrade = null;
+    });
   }
 
   Future<void> fetchData() async {
     final dataObjects = await _mongoService.dataObjectsWithinRadius(
         _currentPosition!.longitude, _currentPosition!.latitude, 10.0);
-
     if (_mistakeTimestamps == null) {
       _mistakeTimestamps = [];
     }
@@ -162,11 +189,11 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
           if (now == lastTimestamp) {
             isMistake = false;
           }
-          // Check if the current speeding incident is within 2 seconds of the last one
+          // Check if the current speeding incident is within 10 seconds of the last one
           else if (now.difference(lastTimestamp).inSeconds <= 10) {
             isMistake = false;
           }
-          // Check if the current speeding incident is within 2 seconds of the second-last one
+          // Check if the current speeding incident is within 10 seconds of the second-last one
           else if (now.difference(secondLastTimestamp).inSeconds <= 10) {
             isMistake = false;
           } else {
@@ -220,54 +247,49 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            if (_currentPosition != null)
-              Text(
-                'Location Data',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            if (_currentPosition != null)
-              Text(
-                'Latitude: ${_currentPosition!.latitude}\nLongitude: ${_currentPosition!.longitude}',
-                textAlign: TextAlign.center,
-              ),
-            SizedBox(height: 30),
-            if (_currentPosition != null)
-              Text(
-                'Speed',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            if (_currentPosition != null)
-              Text(
-                '${(_currentPosition!.speed * 3.6).toStringAsFixed(2)} km/h',
-                textAlign: TextAlign.center,
-              ),
-            Text(
-              'Grade',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '$grade',
-              textAlign: TextAlign.center,
-            ),
-            _dataObjects != null
-                ? Expanded(
-                    child: ListView.builder(
-                      itemCount: _dataObjects!.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return ListTile(
-                          title: Text('Data Object ${index + 1}:'),
-                          subtitle: Text(
-                              'Type: ${_dataObjects![index]['type']}\nSpeed Limit: ${_dataObjects![index]['speedLimit']}'),
-                        );
-                      },
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (_currentPosition != null)
+                Column(
+                  children: [
+                    Text(
+                      'Latitude: ${_currentPosition!.latitude.toStringAsFixed(5)}',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
-                  )
-                : CircularProgressIndicator(),
-          ],
+                    SizedBox(height: 16),
+                    Text(
+                      'Longitude: ${_currentPosition!.longitude.toStringAsFixed(5)}',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Speed: ${(_currentPosition!.speed * 3.6).toStringAsFixed(2)} km/h',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 16),
+                    if (_dataObjects != null && _dataObjects!.isNotEmpty)
+                      Text(
+                        'Street Speed Limit: ${_dataObjects![0]['speedLimit']} km/h',
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Mistakes: $_mistakes',
+                      style:
+                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(

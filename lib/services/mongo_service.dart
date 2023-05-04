@@ -1,9 +1,11 @@
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:test2/models/UserData.dart';
 
 class MongoService {
   final Db db;
 
+  UserData? userData = UserStorage.userData;
   MongoService._(this.db);
 
   static Future<MongoService> initialize() async {
@@ -54,6 +56,7 @@ class MongoService {
     Map<String, dynamic> logData = {
       'data': data,
       'timestamp': DateTime.now(),
+      'uid': userData?.id
     };
 
     // Insert the map into the logs collection

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:test2/services/mongo_service.dart';
 
+import '../models/UserData.dart';
+
 class LogsScreenPage extends StatefulWidget {
   const LogsScreenPage({Key? key}) : super(key: key);
 
@@ -29,10 +31,10 @@ class _LogsScreenPageState extends State<LogsScreenPage> {
     while (_mongoService == null) {
       await Future.delayed(Duration(milliseconds: 100));
     }
-
+    UserData? userData = UserStorage.userData;
     // Fetch the logs from the logs collection
     final collection = _mongoService.db.collection('logs');
-    final logs = await collection.find().toList();
+    final logs = await collection.find({'uid': userData?.id}).toList();
 
     setState(() {
       _logs = logs;

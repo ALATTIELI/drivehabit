@@ -1,15 +1,8 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-
-// db
-import 'package:firebase_database/firebase_database.dart';
-
-// auth
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-FirebaseDatabase database = FirebaseDatabase.instance;
+import '../models/UserData.dart';
 
 class ProfileScreenPage extends StatefulWidget {
   @override
@@ -17,142 +10,150 @@ class ProfileScreenPage extends StatefulWidget {
 }
 
 class _ProfileScreenPageState extends State<ProfileScreenPage> {
-  Future<UserCredential> signInWithGoogle() async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  UserData? userData = UserStorage.userData;
+  User? _user = FirebaseAuth.instance.currentUser;
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+  String? _error;
 
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-
-    // Once signed in, return the UserCredential
-    return await FirebaseAuth.instance.signInWithCredential(credential);
+  @override
+  void initState() {
+    super.initState();
+    // _user = _auth.currentUser;
   }
 
-  FirebaseAuth auth = FirebaseAuth.instance;
-  User? user;
-  String? email;
-  String get userId {
-    return user?.uid ?? 'default';
-  }
-
-  Stream<User?> get authStateChanges => auth.authStateChanges();
-
-  void login() async {
+  Future<void> _login() async {
     try {
-      UserCredential userCredential = await signInWithGoogle();
-      user = userCredential.user;
-      email = userCredential.user!.email!;
-      setState(() {}); // Add this line to update the UI
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser != null) {
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        await _auth.signInWithCredential(credential);
+        setState(() {
+          _error = null;
+        });
+        UserData newUserData = UserData(
+            displayName: _auth.currentUser!.displayName,
+            email: _auth.currentUser!.email,
+            id: _auth.currentUser!.uid,
+            photoURL: _auth.currentUser!.photoURL);
+        setState(() {
+          userData = newUserData;
+        });
+        UserStorage.saveUserData(newUserData);
+      }
     } catch (e) {
-      print(e);
+      setState(() {
+        _error = e.toString();
+      });
     }
   }
 
-  // void writeToDB() async {
-  //   DatabaseReference ref = FirebaseDatabase.instance.ref('users/$userId');
-
-  //   await ref.set({
-  //     "name": user?.displayName,
-  //     "email": user?.email,
-  //     "photo": user?.photoURL,
-  //   });
-  // }
-
-  // void readDB() async {
-  //   final ref = FirebaseDatabase.instance.ref();
-  //   final snapshot = await ref.child('users/$userId').get();
-  //   if (snapshot.exists) {
-  //     print(snapshot.value);
-  //     // set the value to the another string value name
-  //     setState(() {
-  //       another = (snapshot.value as Map<dynamic, dynamic>)['name'];
-  //     });
-  //   } else {
-  //     print('No data available.');
-  //   }
-  // }
-
-  void logoutState() {
-    setState(() {
-      email = null;
-      user = null;
-    });
+  Future<void> _logout() async {
+    try {
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+      setState(() {
+        // _user = null;
+        _error = null;
+      });
+      UserStorage.clearUserData();
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
   }
 
-  void deleteAccount() async {
-    try {
-      await user?.delete();
-      logoutState();
-    } catch (e) {
-      print(e);
+  Future<void> _deleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Are you sure you want to delete your account?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      try {
+        await _auth.currentUser?.delete();
+        setState(() {
+          // _user = null;
+          _error = null;
+        });
+        UserStorage.clearUserData();
+      } catch (e) {
+        setState(() {
+          _error = e.toString();
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: authStateChanges,
-      builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return CircularProgressIndicator();
-        } else {
-          if (snapshot.hasData) {
-            return Column(children: [
-              Center(
-                child: Column(
-                  children: [
-                    Text(
-                      'Profile Screen',
-                      style: TextStyle(fontSize: 30),
-                    ),
-
-                    ElevatedButton(
-                      onPressed: () {
-                        auth.signOut();
-                        logoutState();
-                      },
-                      child: Text('Logout'),
-                    ),
-                    // View the user
-                    Text('${user?.displayName}',
-                        style: TextStyle(fontSize: 20)),
-                    Text('${user?.email}', style: TextStyle(fontSize: 20)),
-                    // img
-                    Image.network(user?.photoURL ?? ''),
-                    // add button to the bottom
-                    ElevatedButton(
-                      onPressed: () {
-                        deleteAccount();
-                      },
-                      child: Text('Delete Account'),
-                    ),
-                  ],
-                ),
-              )
-            ]);
-          } else {
-            return Center(
+    return Scaffold(
+      backgroundColor: Colors.grey[200],
+      body: userData == null
+          ? Center(
+              child: OutlinedButton(
+                onPressed: _login,
+                child: Text('Login with Google'),
+              ),
+            )
+          : Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      login();
-                    },
-                    child: Text('Login'),
+                  SizedBox(height: 20.0),
+                  CircleAvatar(
+                      radius: 70.0,
+                      backgroundImage: NetworkImage(userData?.photoURL ?? '')),
+                  SizedBox(height: 20.0),
+                  Text(
+                    userData?.displayName ?? '',
+                    style: TextStyle(
+                      fontSize: 24.0,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
+                  SizedBox(height: 10.0),
+                  Text(
+                    userData?.email ?? '',
+                    style: TextStyle(
+                      fontSize: 18.0,
+                    ),
+                  ),
+                  SizedBox(height: 20.0),
+                  ElevatedButton(
+                    onPressed: _logout,
+                    child: Text('Logout'),
+                  ),
+                  SizedBox(height: 20.0),
+                  ElevatedButton(
+                    onPressed: _deleteAccount,
+                    child: Text('Delete Account'),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.red,
+                    ),
+                  ),
+                  if (_error != null) Text(_error!),
                 ],
               ),
-            );
-          }
-        }
-      },
+            ),
     );
   }
 }
