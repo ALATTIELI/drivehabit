@@ -59,7 +59,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> {
       await _googleSignIn.signOut();
       await _auth.signOut();
       setState(() {
-        // _user = null;
+        userData = null;
         _error = null;
       });
       UserStorage.clearUserData();
