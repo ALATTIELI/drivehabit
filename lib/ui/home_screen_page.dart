@@ -55,14 +55,27 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('You need to log in'),
-            content: Text('Please log in to start tracking.'),
+            backgroundColor: Colors.black, // Set the background color to black
+            title: Text(
+              'You need to log in',
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+            content: Text(
+              'Please log in to start tracking.',
+              style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('OK'),
+                child: Text(
+                  'OK',
+                  style: TextStyle(fontSize: 16, color: Colors.blue),
+                ),
               ),
             ],
           );
@@ -96,14 +109,28 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('Final Grade'),
-            content: Text('Your final grade is ${finalGrade}%'),
+            backgroundColor: Colors.black, // Set the background color to black
+
+            title: Text(
+              'Final Grade',
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white),
+            ),
+            content: Text(
+              'Your final grade is ${finalGrade}%',
+              style: TextStyle(fontSize: 18, color: Colors.white),
+            ),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('OK'),
+                child: Text(
+                  'OK',
+                  style: TextStyle(fontSize: 16, color: Colors.blue),
+                ),
               ),
             ],
           );
@@ -214,7 +241,6 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
         }
 
         if (isMistake) {
-          grade = 'F';
           _mistakes += 1;
           _mistakeTimestamps.add(now);
           setState(() {
@@ -233,7 +259,6 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
           print("=====");
           print(_mistakeList);
         } else {
-          grade = 'P';
           print("${speedInKmPerHour} && ${_dataObjects![0]['speedLimit']}");
         }
       } else {
@@ -258,33 +283,43 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
                   children: [
                     Text(
                       'Latitude: ${_currentPosition!.latitude.toStringAsFixed(5)}',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF44a7f4)),
                     ),
                     SizedBox(height: 16),
                     Text(
                       'Longitude: ${_currentPosition!.longitude.toStringAsFixed(5)}',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF44a7f4)),
                     ),
                     SizedBox(height: 16),
                     Text(
                       'Speed: ${(_currentPosition!.speed * 3.6).toStringAsFixed(2)} km/h',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF44a7f4)),
                     ),
                     SizedBox(height: 16),
                     if (_dataObjects != null && _dataObjects!.isNotEmpty)
                       Text(
                         'Street Speed Limit: ${_dataObjects![0]['speedLimit']} km/h',
                         style: TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF44a7f4)),
                       ),
                     SizedBox(height: 16),
                     Text(
                       'Mistakes: $_mistakes',
-                      style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF44a7f4)),
                     ),
                   ],
                 ),

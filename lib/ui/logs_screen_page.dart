@@ -52,19 +52,43 @@ class _LogsScreenPageState extends State<LogsScreenPage> {
           final timestamp = log['timestamp'] as DateTime;
           final data = log['data'];
 
-          return ListTile(
-            title: Text('Log ${index + 1}'),
-            subtitle: Text('Timestamp: $timestamp'),
-            trailing: Icon(Icons.arrow_forward),
-            onTap: () {
-              // Navigate to the log details page
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => LogDetailsPage(data: data),
+          return Padding(
+            padding: EdgeInsets.all(8.0), // Adjust the padding as needed
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                    color: Colors.black), // Set the border color to black
+                borderRadius: BorderRadius.circular(
+                    8.0), // Adjust the border radius as needed
+              ),
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Color(0xFF44a7f4),
+                  child: Icon(
+                    Icons.description,
+                    color: Colors.white,
+                  ),
                 ),
-              );
-            },
+                title: Text(
+                  'Log ${index + 1}',
+                  style: TextStyle(fontSize: 25, color: Color(0xFF44a7f4)),
+                ),
+                subtitle: Text(
+                  'Timestamp: $timestamp',
+                  style: TextStyle(fontSize: 16, color: Colors.black),
+                ),
+                trailing: Icon(Icons.arrow_forward, color: Color(0xFF44a7f4)),
+                onTap: () {
+                  // Navigate to the log details page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LogDetailsPage(data: data),
+                    ),
+                  );
+                },
+              ),
+            ),
           );
         },
       ),
@@ -73,18 +97,22 @@ class _LogsScreenPageState extends State<LogsScreenPage> {
 }
 
 class LogDetailsPage extends StatelessWidget {
-  final dynamic data;
+  final List<dynamic> data;
   const LogDetailsPage({Key? key, required this.data}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Log Details'),
+        backgroundColor: Colors.black,
+        title: Text(
+          'Log Details',
+          style: TextStyle(color: Color(0xFF44a7f4)),
+        ),
       ),
       body: ListView.builder(
         itemCount: data.length,
-        itemBuilder: (BuildContext context, dynamic index) {
+        itemBuilder: (BuildContext context, int index) {
           final log = data[index];
           final location = log['location'];
           final latitude = location['latitude'];
@@ -95,9 +123,39 @@ class LogDetailsPage extends StatelessWidget {
           final timestamp = log['timestamp'];
           final dateTime = timestamp;
 
+          // Get the number of mistakes for the current log
+          int mistakeCount = index + 1;
+
           return Card(
             child: ListTile(
-              leading: Icon(Icons.location_on),
+              leading: Stack(
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    color: Color(0xFF44a7f4),
+                    size: 50, // Adjust the icon size as needed
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      padding: EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '$mistakeCount',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               title: Text('Location: $latitude, $longitude'),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

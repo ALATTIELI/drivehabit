@@ -106,12 +106,22 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Colors.white,
       body: userData == null
           ? Center(
               child: OutlinedButton(
                 onPressed: _login,
-                child: Text('Login with Google'),
+                child: Text(
+                  'Login with Google',
+                  style: TextStyle(
+                      fontSize: 22), // Adjust the font size as desired
+                ),
+                style: ButtonStyle(
+                  side: MaterialStateProperty.all(BorderSide(
+                      color: Colors.black)), // Set the border color to black
+                  minimumSize: MaterialStateProperty.all(
+                      Size(200, 50)), // Adjust the box size as desired
+                ),
               ),
             )
           : Center(
@@ -119,12 +129,25 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(height: 20.0),
-                  CircleAvatar(
-                      radius: 70.0,
-                      backgroundImage: NetworkImage(userData?.photoURL ?? '')),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(
+                        140.0), // Set the same value for all sides to create a square shape
+                    child: Container(
+                      width: 140.0,
+                      height: 140.0,
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color:
+                                Colors.black), // Set the border color to black
+                      ),
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(userData?.photoURL ?? ''),
+                      ),
+                    ),
+                  ),
                   SizedBox(height: 20.0),
                   Text(
-                    userData?.displayName ?? '',
+                    userData?.displayName?.toUpperCase() ?? '',
                     style: TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,

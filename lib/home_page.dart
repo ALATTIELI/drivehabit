@@ -20,16 +20,24 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Drive Habit'),
+        title: Text(
+          'Drive Habit',
+          style: TextStyle(color: Color(0xFF44a7f4)),
+        ),
         centerTitle: true,
-        backgroundColor: Colors.blueGrey[900],
+        backgroundColor: Colors.black,
       ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         onTap: onTabTapped,
         currentIndex: _currentIndex,
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blueGrey[900],
+        backgroundColor: Colors.black, // Set the background color to black
+        unselectedItemColor:
+            Colors.white, // Set the unselected icon color to white
+        selectedItemColor:
+            Color(0xFF44a7f4), // Set the selected icon color to white
+
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
