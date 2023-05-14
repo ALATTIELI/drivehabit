@@ -279,50 +279,93 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (_currentPosition != null)
-                Column(
-                  children: [
-                    Text(
-                      'Latitude: ${_currentPosition!.latitude.toStringAsFixed(5)}',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF44a7f4)),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Longitude: ${_currentPosition!.longitude.toStringAsFixed(5)}',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF44a7f4)),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Speed: ${(_currentPosition!.speed * 3.6).toStringAsFixed(2)} km/h',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF44a7f4)),
-                    ),
-                    SizedBox(height: 16),
-                    if (_dataObjects != null && _dataObjects!.isNotEmpty)
+                ListTile(
+                  leading:
+                      Icon(Icons.place, size: 48, color: Color(0xFF44a7f4)),
+                  title: Text(
+                    'Location',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
+                  subtitle: Row(
+                    children: [
                       Text(
-                        'Street Speed Limit: ${_dataObjects![0]['speedLimit']} km/h',
+                        'Lat: ${_currentPosition!.latitude.toStringAsFixed(5)}',
                         style: TextStyle(
-                            fontSize: 24,
+                            fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF44a7f4)),
                       ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Mistakes: $_mistakes',
-                      style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF44a7f4)),
-                    ),
-                  ],
+                      SizedBox(width: 8),
+                      Text(
+                        'Lon: ${_currentPosition!.longitude.toStringAsFixed(5)}',
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF44a7f4)),
+                      ),
+                    ],
+                  ),
                 ),
+              SizedBox(height: 16),
+              ListTile(
+                leading: Icon(Icons.speed, size: 48, color: Color(0xFF44a7f4)),
+                title: Text(
+                  'Speed',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+                subtitle: Text(
+                  '${(_currentPosition!.speed * 3.6).toStringAsFixed(2)} km/h',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF44a7f4)),
+                ),
+              ),
+              SizedBox(height: 16),
+              if (_dataObjects != null && _dataObjects!.isNotEmpty)
+                ListTile(
+                  leading:
+                      Icon(Icons.error, size: 48, color: Color(0xFF44a7f4)),
+                  title: Text(
+                    'Street Speed Limit',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black),
+                  ),
+                  subtitle: Text(
+                    '${_dataObjects![0]['speedLimit']} km/h',
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF44a7f4)),
+                  ),
+                ),
+              SizedBox(height: 16),
+              ListTile(
+                leading: Icon(Icons.cancel_presentation,
+                    size: 48, color: Color(0xFF44a7f4)),
+                title: Text(
+                  'Mistakes',
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+                subtitle: Text(
+                  '$_mistakes',
+                  style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF44a7f4)),
+                ),
+              ),
             ],
           ),
         ),
