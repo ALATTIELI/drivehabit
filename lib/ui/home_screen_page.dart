@@ -334,7 +334,7 @@ class _HomeScreenPageState extends State<HomeScreenPage> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Street Speed Limit: ${_dataObjects![0]['speedLimit']} km/h',
+                        'Speed Limit: ${_dataObjects![0]['speedLimit']} km/h',
                         style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
